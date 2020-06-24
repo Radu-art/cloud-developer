@@ -38,7 +38,22 @@ router.patch('/:id',
     requireAuth, 
     async (req: Request, res: Response) => {
         //@TODO try it yourself
-        res.send(500).send("not implemented")
+        let { id } = req.params;
+        const caption2 = req.body.caption;
+        console.log("the caption is " + caption2);
+
+    if(!id){
+        return res.status(400).send('id is required');
+    }
+
+    const items = await FeedItem.findByPk(id);
+    if(items) {
+                //items.caption = caption;
+                items.url = AWS.getGetSignedUrl(items.url);
+                await items.update({caption: caption2});
+            }
+    res.send(items);
+        //res.send(500).send("not implemented")
 });
 
 
@@ -77,6 +92,7 @@ router.post('/',
 
     const saved_item = await item.save();
 
+    console.log("HEREEEEEE" + fileName);
     saved_item.url = AWS.getGetSignedUrl(saved_item.url);
     res.status(201).send(saved_item);
 });

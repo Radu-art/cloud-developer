@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
 (async () => {
+  let localFiles: string[] = [];
 
   // Init the Express application
   const app = express();
@@ -12,6 +13,39 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
+
+  app.get( "/deleteLocalFiles/", async ( req, res ) => {
+
+    for(var i = 0; i<localFiles.length; i++){
+    console.log(localFiles[i]);
+    }
+    console.log(localFiles.length);
+    deleteLocalFiles(localFiles);
+    res.send("Local files deleted successfully");
+  });
+
+
+app.get("/filteredimage/", async ( req, res) => {
+
+    let image_url = req.query.image_url;
+    let abosultePath: string;
+    if(!image_url){
+      return res.status(400)
+                  .send(`Image URL is required`);
+    }
+    await filterImageFromURL(image_url).then(function(result){
+      abosultePath = result;
+    });
+    localFiles.push(abosultePath);
+    console.log(abosultePath);
+    res.sendFile(abosultePath, function(err){
+      if (err) {
+        console.log(err); // Check error if you want
+      }
+      console.log("Local file deleted: " + abosultePath);
+      deleteLocalFiles(localFiles); 
+    });
+  });
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
